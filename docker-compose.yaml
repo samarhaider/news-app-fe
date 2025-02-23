@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  frontend:
+    container_name: news-app-fe
+    image: node:23-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "5174:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost/api
+    command: ["sh", "-c", "yarn install && yarn dev --host"]
