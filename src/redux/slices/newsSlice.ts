@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { getNews } from "@api/news";
+import { getNews, NewsApiRequest } from "@api/news";
 interface NewsArticle {
   id: string;
   title: string;
@@ -9,7 +9,6 @@ interface NewsArticle {
 }
 
 interface NewsState {
-  news: string[];
   news: NewsArticle[];
   loading: boolean;
   error: string | null;
@@ -22,9 +21,9 @@ const initialState: NewsState = {
 };
 
 // **Thunk to fetch news**
-export const fetchNews = createAsyncThunk("news/fetchNews", async (_, { rejectWithValue }) => {
+export const fetchNews = createAsyncThunk("news/fetchNews", async (filters: NewsApiRequest, { rejectWithValue }) => {
   try {
-    const response = await getNews();
+    const response = await getNews(filters);
     return response;
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || "Failed to load news");

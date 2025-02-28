@@ -1,15 +1,38 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@redux/hooks";
 import { fetchNews } from "@redux/slices/newsSlice";
-import { Box, Card, CardContent, CardMedia, Typography, Button, Grid, CircularProgress, Container } from "@mui/material";
+import { Box, Card, CardContent, CardMedia, Typography, Button, Grid, CircularProgress, Container, FormControl, InputLabel, MenuItem, Select, TextField, Pagination} from "@mui/material";
+import { debounce } from "lodash";
+import { NewsApiRequest } from "@api/news";
+import { providers, categories } from "@config";
+
 
 const News = () => {
   const dispatch = useAppDispatch();
   const { news, loading, error } = useAppSelector((state) => state.news);
+  const [page, setPage] = useState<number>(1);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+  const [searchTitle, setSearchTitle] = useState<string>("");
+
+  const debouncedSearch = debounce((searchTerm: string) => {
+    const newsReq = { search: searchTerm, categories: selectedCategories, providers: selectedProviders, page } as NewsApiRequest
+    dispatch(fetchNews(newsReq));
+  }, 300);
 
   useEffect(() => {
-    dispatch(fetchNews());
+    debouncedSearch(searchTitle);
+    return () => debouncedSearch.cancel();
+  }, [searchTitle, selectedCategories, selectedProviders, page]);
+  
+  useEffect(() => {
+    const newsReq = { } as NewsApiRequest
+    dispatch(fetchNews(newsReq));
   }, [dispatch]);
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
 
   return (
     <Container maxWidth="md">
@@ -25,10 +48,49 @@ const News = () => {
           <Button variant="contained" color="secondary" onClick={() => dispatch(fetchNews())}>Retry</Button>
         </Box>
       )}
+      <Box display="flex" gap={2} mb={2}>
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            multiple
+            value={selectedCategories}
+            onChange={(e) => setSelectedCategories(e.target.value)}
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {categories.map(({key, value}) => (
+              <MenuItem key={key} value={key}>
+                {value}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Provider</InputLabel>
+          <Select
+            multiple
+            value={selectedProviders}
+            onChange={(e) => setSelectedProviders(e.target.value)}
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {providers.map(({key, value}) => (
+              <MenuItem key={key} value={key}>
+                {value}
+              </MenuItem> 
+            ))}
+          </Select>
+        </FormControl>
+
+        <TextField
+          label="Search Title"
+          variant="outlined"
+          value={searchTitle}
+          onChange={(e) => setSearchTitle(e.target.value)}
+        />
+      </Box>
       {/* News List */}
       <Grid container spacing={3}>
-        {news?.map((article) => (
+        {news?.data?.map((article) => (
           <Grid item xs={12} sm={6} md={4} key={article.id}>
             <Card sx={{ boxShadow: 3 }}>
               <CardMedia
@@ -58,6 +120,7 @@ const News = () => {
           </Grid>
         ))}
       </Grid>
+      <Pagination count={news.last_page} page={news.per_page} onChange={handlePageChange} color="primary" sx={{ mt: 2 }} />
     </Container>
   );
 };

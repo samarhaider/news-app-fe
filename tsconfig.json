@@ -4,6 +4,7 @@
     "baseUrl": "src",
     "paths": {
       "@api/*": ["api/*"],
+      "@config/*": ["config/*"],
       "@redux/*": ["redux/*"],
       "@pages/*": ["pages/*"],
       "@components/*": ["components/*"],

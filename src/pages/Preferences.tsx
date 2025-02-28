@@ -3,14 +3,12 @@ import { useForm, Controller } from "react-hook-form";
 import { FormControl, InputLabel, Select, MenuItem, Checkbox, Button, Box, Typography, Container } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@redux/hooks";
 import { fetchPreferences, updatePreferences } from "@redux/slices/preferencesSlice";
+import { providers as providersList, categories as categoriesList } from "@config";
 
 interface PreferencesForm {
   providers: string[];
   categories: string[];
 }
-
-const categoriesList = ["Technology", "Sports", "Politics", "Health", "Entertainment", "Business"];
-const providersList = ["BBC", "CNN", "Al Jazeera", "Reuters"];
 
 const Preferences = () => {
   const dispatch = useAppDispatch();
@@ -46,10 +44,10 @@ const Preferences = () => {
               control={control}
               render={({ field }) => (
                 <Select {...field} multiple renderValue={(selected) => selected.join(", ")}>
-                  {providersList.map((provider) => (
-                    <MenuItem key={provider} value={provider}>
-                      <Checkbox checked={field.value?.includes(provider)} />
-                      {provider}
+                  {providersList.forEach((key, value) => (
+                    <MenuItem key={key} value={value}>
+                      <Checkbox checked={field.value?.includes(value)} />
+                      {value}
                     </MenuItem>
                   ))}
                 </Select>
@@ -64,10 +62,10 @@ const Preferences = () => {
               control={control}
               render={({ field }) => (
                 <Select {...field} multiple renderValue={(selected) => selected.join(", ")}>
-                  {categoriesList.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      <Checkbox checked={field.value?.includes(category)} />
-                      {category}
+                  {categoriesList.map(({key, value}) => (
+                    <MenuItem key={key} value={value}>
+                      <Checkbox checked={field.value?.includes(value)} />
+                      {value}
                     </MenuItem>
                   ))}
                 </Select>
